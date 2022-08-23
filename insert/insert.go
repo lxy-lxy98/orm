@@ -1,4 +1,4 @@
-package homework
+package insert
 
 import (
 	"errors"
