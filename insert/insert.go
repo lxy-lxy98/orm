@@ -2,7 +2,6 @@ package insert
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 )
@@ -32,23 +31,41 @@ func InsertStmt(entity interface{}) (string, []interface{}, error) {
 	}
 
 	num := typ.NumField()
+	// 使用 strings.Builder 来拼接 字符串
 	bd := strings.Builder{}
 	bd.WriteString("INSERT INTO ")
 	bd.WriteString("`" + typ.Name() + "`" + "(")
-	//args := make([]interface{}, num)
+	var args []interface{}
+	// 遍历所有的字段，构造出来的是 INSERT INTO XXX(col1, col2, col3)
 	for i := 0; i < num; i++ {
 		refVal := val.Field(i).Interface()
-		fmt.Println("val: ", i, refVal)
-		//args = append(args, val.Field(1).Interface())
+		args = append(args, refVal)
 		fd := typ.Field(i)
-		bd.WriteString("`" + fd.Name + "`")
-		if i == num-1 {
-			bd.WriteString(") ")
+		if fd.Type.Kind() == reflect.Struct {
+			compositionNum := fd.Type.NumField()
+			for j := 0; j < compositionNum; j++ {
+				cfd := fd.Type.Field(j)
+				bd.WriteString("`" + cfd.Name + "`")
+				if j != compositionNum-1 {
+					bd.WriteString(",")
+				}
+			}
+			if i == num-1 {
+				bd.WriteString(") ")
+			} else {
+				bd.WriteString(",")
+			}
 		} else {
-			bd.WriteString(",")
+			bd.WriteString("`" + fd.Name + "`")
+			if i == num-1 {
+				bd.WriteString(") ")
+			} else {
+				bd.WriteString(",")
+			}
 		}
 	}
 	bd.WriteString("VALUES(")
+	//再一次遍历所有的字段，要拼接成 INSERT INTO XXX(col1, col2, col3) VALUES(?,?,?)
 	for i := 0; i < num; i++ {
 		bd.WriteString("?")
 		if i == num-1 {
@@ -57,15 +74,8 @@ func InsertStmt(entity interface{}) (string, []interface{}, error) {
 			bd.WriteString(",")
 		}
 	}
-	fmt.Println(bd.String())
-	return bd.String(), nil, nil
-	// 使用 strings.Builder 来拼接 字符串
-	// bd := strings.Builder{}
+	return bd.String(), args, nil
 
-	// 构造 INSERT INTO XXX，XXX 是你的表名，这里我们直接用结构体名字
-
-	// 遍历所有的字段，构造出来的是 INSERT INTO XXX(col1, col2, col3)
-	// 在这个遍历的过程中，你就可以把参数构造出来
 	// 如果你打算支持组合，那么这里你要深入解析每一个组合的结构体
 	// 并且层层深入进去
 

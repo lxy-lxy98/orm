@@ -1,0 +1,28 @@
+{
+    "go.useLanguageServer": true,
+    "go.docsTool": "godoc",
+    "go.autocompleteUnimportedPackages": true,
+    "go.gocodePackageLookupMode": "go",
+    "go.gotoSymbol.includeImports": true,
+    "go.inferGopath": false,
+    "workbench.colorTheme": "Default Dark+",
+    "code-runner.runInTerminal": true,
+    "cmake.configureOnOpen": true,
+    // "gopls": {
+    //     "completeUnimported": true,
+    //     "completionDocumentation": true,
+    //     "deepCompletion": true,
+    // },
+    "vsicons.dontShowNewVersionMessage": true,
+    "go.toolsManagement.autoUpdate": true,
+    "go.testFlags": [
+        "-v"
+    ],
+    "editor.snippetSuggestions": "inline",
+    "editor.guides.bracketPairs": true,
+    "editor.codeActionsOnSave": {
+        
+        "source.fixAll": true,
+        "source.organizeImports": true
+    },
+}

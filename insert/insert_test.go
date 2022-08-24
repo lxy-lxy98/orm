@@ -30,14 +30,14 @@ func TestInsertStmt(t *testing.T) {
 			name:   "simple struct",
 			entity: BaseEntity{},
 			// 稍微注意一下，这里我们用反射取出来的不是存粹的 nil，而是一个带了类型的 nil
-			//wantArgs: []interface{}{int64(0), (*int64)(nil)},
-			wantSQL: "INSERT INTO `BaseEntity`(`CreateTime`,`UpdateTime`) VALUES(?,?);",
+			wantArgs: []interface{}{int64(0), (*int64)(nil)},
+			wantSQL:  "INSERT INTO `BaseEntity`(`CreateTime`,`UpdateTime`) VALUES(?,?);",
 		},
 		{
-			name:   "pointer",
-			entity: &BaseEntity{CreateTime: 123, UpdateTime: ptrInt64(234)},
-			//wantArgs: []interface{}{int64(123), ptrInt64(234)},
-			wantSQL: "INSERT INTO `BaseEntity`(`CreateTime`,`UpdateTime`) VALUES(?,?);",
+			name:     "pointer",
+			entity:   &BaseEntity{CreateTime: 123, UpdateTime: ptrInt64(234)},
+			wantArgs: []interface{}{int64(123), ptrInt64(234)},
+			wantSQL:  "INSERT INTO `BaseEntity`(`CreateTime`,`UpdateTime`) VALUES(?,?);",
 		},
 		{
 			name: "multiple pointer",
@@ -47,21 +47,21 @@ func TestInsertStmt(t *testing.T) {
 			}(),
 			wantErr: errInvalidEntity,
 		},
-		// {
-		// 	// 组合
-		// 	name: "composition",
-		// 	entity: User{
-		// 		BaseEntity: BaseEntity{
-		// 			CreateTime: 123,
-		// 			UpdateTime: ptrInt64(456),
-		// 		},
-		// 		Id:       789,
-		// 		NickName: sql.NullString{String: "Tom", Valid: true},
-		// 	},
-		// 	wantArgs: []interface{}{int64(123), ptrInt64(456), uint64(789),
-		// 		sql.NullString{String: "Tom", Valid: true}, (*sql.NullInt32)(nil)},
-		// 	wantSQL: "INSERT INTO `User`(`CreateTime`,`UpdateTime`,`Id`,`NickName`,`Age`) VALUES(?,?,?,?,?);",
-		// },
+		{
+			// 组合
+			name: "composition",
+			entity: User{
+				BaseEntity: BaseEntity{
+					CreateTime: 123,
+					UpdateTime: ptrInt64(456),
+				},
+				Id:       789,
+				NickName: sql.NullString{String: "Tom", Valid: true},
+			},
+			wantArgs: []interface{}{int64(123), ptrInt64(456), uint64(789),
+				sql.NullString{String: "Tom", Valid: true}, (*sql.NullInt32)(nil)},
+			wantSQL: "INSERT INTO `User`(`CreateTime`,`UpdateTime`,`Id`,`NickName`,`Age`) VALUES(?,?,?,?,?);",
+		},
 		// {
 		// 	name: "deep composition",
 		// 	entity: &Buyer{
@@ -127,14 +127,14 @@ func TestInsertStmt(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			query, _, err := InsertStmt(tc.entity)
+			query, args, err := InsertStmt(tc.entity)
 			assert.Equal(t, tc.wantErr, err)
 			if tc.wantErr != nil {
 				// 预期会有错误返回，就不需要进一步校验其它两个返回值了
 				return
 			}
 			assert.Equal(t, tc.wantSQL, query)
-			//assert.Equal(t, tc.wantArgs, args)
+			assert.Equal(t, tc.wantArgs, args)
 		})
 	}
 }
